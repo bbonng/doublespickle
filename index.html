@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>피클볼 복식조 편성</title>
+<style>
+  :root{
+    --court-blue:#1f7a8c; --court-green:#2a9d4e; --line:#ffffff; --ball:#d6e000;
+    --ink:#10242b; --paper:#ffffff;
+    --women:#e8607a; --women-soft:#fff0f3;
+    --men:#2f7fd6; --men-soft:#eef6ff;
+    --pick:#f0a500;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    color:var(--ink);
+    background:radial-gradient(circle at 20% 15%, rgba(255,255,255,.06), transparent 40%),
+      linear-gradient(135deg,#0d3b43 0%, #134e57 45%, #1f7a8c 100%);
+    min-height:100%; overflow-x:hidden;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.10;
+    background-image:linear-gradient(var(--line) 2px, transparent 2px),linear-gradient(90deg,var(--line) 2px, transparent 2px);
+    background-size:120px 120px;background-position:center;}
+  .wrap{max-width:1100px;margin:0 auto;padding:18px 16px 60px;position:relative;z-index:1;}
+
+  header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+  .logo{width:46px;height:46px;border-radius:50%;flex:none;position:relative;
+    background:radial-gradient(circle at 35% 30%, #f4ff5e, var(--ball) 60%, #aeb800);
+    box-shadow:0 4px 14px rgba(0,0,0,.3), inset 0 0 0 3px rgba(255,255,255,.25);}
+  h1{font-size:22px;margin:0;color:#fff;letter-spacing:-.3px;font-weight:800;}
+  h1 small{display:block;font-size:12px;font-weight:600;color:#bfe6e0;letter-spacing:1px;margin-top:2px;}
+
+  .panel{background:rgba(255,255,255,.97);border-radius:18px;padding:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.22);margin-bottom:16px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  label.field{font-size:13px;font-weight:700;color:#355;display:block;margin:0 0 6px;}
+  input[type=text],input[type=url],select{padding:11px 12px;border-radius:12px;border:2px solid #cfe0e3;
+    background:#fff;font-weight:700;color:var(--ink);font-size:16px;font-family:inherit;}
+  select{min-width:120px;}
+  .btn{border:none;border-radius:14px;padding:14px 20px;font-weight:800;cursor:pointer;color:#fff;
+    transition:transform .08s ease, box-shadow .2s;font-family:inherit;}
+  .btn:active{transform:translateY(2px) scale(.99);}
+  .btn-primary{background:linear-gradient(135deg,var(--court-green),#1f8b42);
+    box-shadow:0 6px 16px rgba(31,139,66,.4);font-size:18px;flex:1;min-width:200px;}
+  .btn-ghost{background:#eaf3f4;color:#16545f;border:2px solid #cfe0e3;}
+  .btn-pink{background:linear-gradient(135deg,#ff7b94,var(--women));box-shadow:0 6px 16px rgba(232,96,122,.35);}
+  .btn-blue{background:linear-gradient(135deg,#3a8ee0,#1c63b0);}
+  .btn-sm{padding:10px 14px;font-size:14px;border-radius:11px;}
+  #sexToggle.on{background:linear-gradient(135deg,#7b5cff,#5a3fd6);color:#fff;border-color:transparent;}
+
+  .hint{font-size:12.5px;color:#5a7077;margin:8px 2px 0;line-height:1.55;}
+  .hint b{color:#16545f;}
+  .count-pills{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .pill{font-size:13px;font-weight:800;padding:6px 12px;border-radius:999px;}
+  .pill.w{background:var(--women-soft);color:var(--women);}
+  .pill.m{background:var(--men-soft);color:var(--men);}
+  .pill.t{background:#eef7ee;color:#1f8b42;}
+  .pill.x{background:#f0f0f0;color:#888;}
+
+  .setup-toggle{cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center;}
+  .setup-toggle .chev{transition:transform .25s;font-size:14px;color:#789;}
+  .panel.collapsed .setup-body{display:none;}
+  .panel.collapsed .chev{transform:rotate(-90deg);}
+
+  #rosterBox{display:none;}
+  .att-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+  .chip{font-size:16px;font-weight:800;padding:9px 14px;border-radius:12px;cursor:pointer;
+    border:2px solid transparent;display:flex;align-items:center;gap:7px;user-select:none;transition:.12s;}
+  .chip .d{width:8px;height:8px;border-radius:50%;}
+  .chip.w{background:var(--women-soft);color:var(--women);} .chip.w .d{background:var(--women);}
+  .chip.m{background:var(--men-soft);color:var(--men);} .chip.m .d{background:var(--men);}
+  .chip.absent{background:#ececec !important;color:#aaa !important;text-decoration:line-through;}
+  .chip.absent .d{background:#bbb !important;}
+  .chip.locked{opacity:.5;cursor:not-allowed;text-decoration:line-through;}
+  .grp-label{width:100%;font-size:12px;font-weight:800;letter-spacing:1px;color:#8aa;margin:8px 0 2px;}
+
+  .sticky-actions{position:sticky;top:8px;z-index:5;display:flex;gap:10px;margin-bottom:16px;}
+
+  #courts{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+  .court{border-radius:18px;overflow:hidden;background:var(--paper);box-shadow:0 10px 26px rgba(0,0,0,.25);
+    opacity:0;transform:translateY(14px) scale(.97);animation:pop .5s cubic-bezier(.2,.8,.2,1) forwards;}
+  @keyframes pop{to{opacity:1;transform:none;}}
+  .court-head{padding:12px 16px;color:#fff;font-weight:800;display:flex;align-items:center;gap:10px;}
+  .court-head .cnum{font-size:26px;line-height:1;background:rgba(255,255,255,.22);
+    width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .court-head .ctag{font-size:13px;opacity:.92;font-weight:700;}
+  .court-head .ctitle{font-size:17px;}
+  .court.w .court-head{background:linear-gradient(135deg,#ff7b94,var(--women));}
+  .court.m .court-head{background:linear-gradient(135deg,#2f7fd6,#1c63b0);}
+  .court.x .court-head{background:linear-gradient(135deg,#2a9d4e,#177a8c);}
+  .court.x .player{background:#eef6f3;}
+  .court.x .player .dot{background:#2a9d4e;}
+  .team{padding:12px 16px;}
+  .team-label{font-size:11px;font-weight:800;letter-spacing:1px;color:#8aa;margin-bottom:6px;}
+  .player{font-size:20px;font-weight:800;color:var(--ink);padding:9px 12px;margin:6px 0;border-radius:11px;
+    background:#f4f8f9;display:flex;align-items:center;gap:9px;}
+  .court.w .player{background:var(--women-soft);} .court.m .player{background:var(--men-soft);}
+  .player .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .court.w .player .dot{background:var(--women);} .court.m .player .dot{background:var(--men);}
+  .player.twice{box-shadow:inset 0 0 0 2px var(--ball);}
+  .player .badge{margin-left:auto;font-size:10.5px;font-weight:800;background:var(--ball);color:#5a5e00;padding:3px 8px;border-radius:999px;}
+  .player.pick{background:repeating-linear-gradient(45deg,#fff7e6 0 10px,#fff 10px 20px);
+    border:2px dashed var(--pick);color:var(--pick);justify-content:center;font-size:16px;}
+  .player.pick .dot{display:none;}
+
+  #empty{color:#cfe6e3;text-align:center;padding:30px 10px;font-weight:600;}
+  #empty b{color:#fff;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:#10242b;color:#fff;padding:12px 20px;border-radius:14px;font-weight:700;z-index:50;
+    opacity:0;transition:.3s;box-shadow:0 8px 24px rgba(0,0,0,.4);max-width:90%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  @media (max-width:480px){h1{font-size:19px;}.btn-primary{font-size:16px;}.player{font-size:18px;}}
+
+  /* ===== 전체화면 결과 뷰 ===== */
+  #stage{position:fixed;inset:0;z-index:40;display:none;flex-direction:column;
+    background:linear-gradient(135deg,#0d3b43 0%, #134e57 45%, #1f7a8c 100%);padding:0;}
+  #stage.on{display:flex;}
+  #stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.10;
+    background-image:linear-gradient(var(--line) 2px, transparent 2px),linear-gradient(90deg,var(--line) 2px, transparent 2px);
+    background-size:120px 120px;background-position:center;}
+  .stage-bar{position:relative;z-index:2;display:flex;align-items:center;gap:10px;
+    padding:10px 14px;flex-wrap:wrap;}
+  .stage-bar .title{color:#fff;font-weight:800;font-size:16px;margin-right:auto;display:flex;align-items:center;gap:8px;}
+  .stage-bar .title .ball{width:22px;height:22px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #f4ff5e, var(--ball) 60%, #aeb800);box-shadow:inset 0 0 0 2px rgba(255,255,255,.3);}
+  .tabs{display:flex;gap:6px;background:rgba(255,255,255,.15);padding:4px;border-radius:12px;}
+  .tab{padding:8px 16px;border-radius:9px;font-weight:800;font-size:14px;color:#dff;cursor:pointer;border:none;background:transparent;}
+  .tab.active{background:#fff;color:#16545f;}
+  .tab.w.active{color:var(--women);} .tab.m.active{color:var(--men);}
+  .stage-bar .sbtn{border:none;border-radius:11px;padding:9px 14px;font-weight:800;font-size:14px;cursor:pointer;color:#fff;}
+  .sbtn.shuffle{background:linear-gradient(135deg,#ff7b94,var(--women));}
+  .sbtn.close{background:rgba(255,255,255,.2);}
+
+  #stageCourts{position:relative;z-index:2;flex:1;display:grid;gap:8px;padding:4px 12px 10px;
+    align-content:stretch;overflow:hidden;}
+  #stageCourts .court{box-shadow:0 6px 18px rgba(0,0,0,.28);display:flex;flex-direction:column;margin:0;min-height:0;}
+  #stageCourts .court-head{padding:6px 12px;}
+  #stageCourts .court-head .cnum{width:30px;height:30px;font-size:18px;border-radius:8px;}
+  #stageCourts .court-head .ctitle{font-size:14px;}
+  #stageCourts .court-head .ctag{font-size:10px;}
+  #stageCourts .team{padding:5px 10px;flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0;}
+  #stageCourts .team-label{margin-bottom:2px;font-size:10px;}
+  #stageCourts .player{font-size:clamp(15px,2.3vw,24px);padding:5px 10px;margin:0;}
+  #stageCourts .player.pick{font-size:clamp(12px,1.8vw,16px);}
+
+  /* 가로 팀 배치 */
+  .team-row{display:flex;gap:8px;}
+  .team-row .player{flex:1;margin:0;min-width:0;}
+  .team-row .player .pn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  #stageCourts .team-row .player{font-size:clamp(15px,2vw,26px);}
+  .court-head .game{font-weight:700;opacity:.92;font-size:.86em;}
+
+  /* 그래픽 네트 */
+  .net{position:relative;height:26px;padding:0;display:flex;align-items:center;justify-content:center;
+    background:
+      repeating-linear-gradient(90deg, rgba(120,150,160,.45) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(0deg, rgba(120,150,160,.45) 0 1px, transparent 1px 9px),
+      linear-gradient(#eef4f5,#e2edee);
+    border-top:2px solid #c2d3d6;border-bottom:2px solid #c2d3d6;}
+  .net .net-band{font-size:10px;font-weight:800;letter-spacing:3px;color:#5f7d84;
+    background:#fff;padding:2px 12px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.12);}
+  #stageCourts .net{height:22px;}
+  #stageWait{position:relative;z-index:2;padding:0 12px 10px;}
+  #stageWait .wbar{background:rgba(255,255,255,.92);border-radius:12px;padding:8px 14px;
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .stage-hide{display:none !important;}
+</style>
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"></div>
+    <h1>피클볼 복식조 편성<small>RANDOM DOUBLES · 평가용</small></h1>
+  </header>
+
+  <div class="panel" id="setupPanel">
+    <div class="setup-toggle" onclick="toggleSetup()">
+      <strong style="font-size:15px;color:#16545f;">① 구글시트 연결</strong>
+      <span class="chev">▾</span>
+    </div>
+    <div class="setup-body" style="margin-top:14px;">
+      <label class="field">구글시트 주소 붙여넣기</label>
+      <div class="row">
+        <input type="url" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..../edit" style="flex:1;min-width:200px;">
+        <button class="btn btn-blue btn-sm" onclick="loadSheet()">불러오기</button>
+      </div>
+      <div class="hint">
+        시트는 <b>A:반 / B:이름 / C:성별 / D:비고</b> 구조 그대로면 됩니다.<br>
+        ⚙️ 시트에서 <b>공유 → 일반 액세스 → "링크가 있는 모든 사용자(뷰어)"</b>로 한 번 바꿔주세요. 주소는 이 기기에 저장돼 다음부턴 자동으로 불러옵니다.<br>
+        🚫 D열(비고)에 <b>특수 · 제외</b>를 적은 학생은 평가에서 상시 제외됩니다. 결석은 시트를 건드리지 말고 아래에서 탭으로 빼세요.
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <button class="btn btn-ghost btn-sm" onclick="usePaste()">시트 대신 직접 붙여넣기</button>
+        <button class="btn btn-ghost btn-sm" onclick="forget()">저장된 주소 지우기</button>
+      </div>
+      <div id="pasteArea" style="display:none;margin-top:10px;">
+        <label class="field">명단 붙여넣기 (반,이름,성별,비고 — 구글시트 4열 복사)</label>
+        <textarea id="rawInput" style="width:100%;min-height:90px;padding:12px;border-radius:12px;border:2px solid #cfe0e3;font-family:inherit;font-size:15px;" placeholder="1	강도영	남&#10;1	권한서	남&#10;1	길수진	여"></textarea>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;" onclick="applyPaste()">적용</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="rosterBox">
+    <div class="row" style="justify-content:space-between;">
+      <div class="row" style="align-items:flex-end;">
+        <div>
+          <label class="field">반</label>
+          <select id="classSel" onchange="renderRoster()"></select>
+        </div>
+        <div>
+          <label class="field">편성 방식</label>
+          <button class="btn btn-ghost btn-sm" id="sexToggle" onclick="toggleSexMode()">성별 무시 (전체 혼합)</button>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="resetAbsent()" style="align-self:flex-end;">결석 초기화</button>
+    </div>
+    <div class="row" id="courtCfg" style="margin-top:10px;align-items:flex-end;">
+      <div id="cfgW">
+        <label class="field">여학생 코트 수</label>
+        <input type="number" id="courtsW" min="1" max="12" value="1" style="width:84px;padding:11px 12px;border-radius:12px;border:2px solid #cfe0e3;font-weight:700;font-size:16px;font-family:inherit;text-align:center;">
+      </div>
+      <div id="cfgM">
+        <label class="field">남학생 코트 수</label>
+        <input type="number" id="courtsM" min="1" max="12" value="2" style="width:84px;padding:11px 12px;border-radius:12px;border:2px solid #cfe0e3;font-weight:700;font-size:16px;font-family:inherit;text-align:center;">
+      </div>
+      <div id="cfgX" style="display:none;">
+        <label class="field">코트 수</label>
+        <input type="number" id="courtsX" min="1" max="12" value="3" style="width:84px;padding:11px 12px;border-radius:12px;border:2px solid #cfe0e3;font-weight:700;font-size:16px;font-family:inherit;text-align:center;">
+      </div>
+      <div class="hint" style="flex:1;min-width:180px;margin:0;">실제 사용할 코트 수예요. 경기가 코트보다 많으면 <b>같은 코트에서 여러 경기</b>(1코트/1경기, 1코트/2경기…)로 돌아갑니다.</div>
+    </div>
+    <div class="hint" style="margin-bottom:2px;">② 결석한 학생 이름을 <b>탭</b>하면 오늘만 빠집니다(다음에 다시 켜면 전원 복귀). 회색은 제외, 줄 그어진 잠금은 비고 상시제외.</div>
+    <div class="att-grid" id="attGrid"></div>
+    <div class="count-pills" id="counts"></div>
+  </div>
+
+  <div class="sticky-actions">
+    <button class="btn btn-primary" onclick="assign()">🎲 편성 시작</button>
+  </div>
+
+  <div id="empty">구글시트를 연결하고 <b>반을 선택</b>한 뒤<br><b>편성 시작</b>을 누르면<br>전체 화면에 코트가 펼쳐집니다.</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- ===== 전체화면 결과 뷰 ===== -->
+<div id="stage">
+  <div class="stage-bar">
+    <div class="title"><span class="ball"></span><span id="stageTitle">편성 결과</span></div>
+    <div class="tabs" id="stageTabs">
+      <button class="tab active" data-f="all" onclick="setFilter('all')">전체</button>
+      <button class="tab w" data-f="w" onclick="setFilter('w')">여학생</button>
+      <button class="tab m" data-f="m" onclick="setFilter('m')">남학생</button>
+    </div>
+    <button class="sbtn shuffle" onclick="assign()">다시 섞기</button>
+    <button class="sbtn close" onclick="closeStage()">닫기</button>
+  </div>
+  <div id="stageCourts"></div>
+  <div id="stageWait"></div>
+</div>
+
+<script>
+let classes={};
+let absent=new Set();
+
+function sexOf(s){ s=(s||'').toString().toUpperCase().trim();
+  if(/여|F|W|GIRL/.test(s)) return 'W'; if(/남|M|B|BOY/.test(s)) return 'M'; return null; }
+function isExcluded(memo){ return /특수|제외|불참|장기|면제/.test((memo||'').toString()); }
+
+function ingest(rows){
+  const c={};
+  rows.forEach(r=>{
+    if(r.length<3) return;
+    const cls=(r[0]||'').toString().trim();
+    const name=(r[1]||'').toString().trim();
+    const sex=sexOf(r[2]);
+    const memo=r[3];
+    if(!cls||!name||!sex) return;
+    if(/^반$/.test(cls)||/이름/.test(name)) return;
+    (c[cls]=c[cls]||[]).push({name, sex, excluded:isExcluded(memo)});
+  });
+  if(!Object.keys(c).length){ toast('읽을 명단이 없어요. 시트 구조(반/이름/성별)를 확인하세요'); return false; }
+  classes=c; buildClassSel(); document.getElementById('rosterBox').style.display='block';
+  renderRoster(); collapseSetup(true);
+  return true;
+}
+function buildClassSel(){
+  const sel=document.getElementById('classSel'); sel.innerHTML='';
+  Object.keys(classes).sort((a,b)=>(+a||a)-(+b||b)||(''+a).localeCompare(b)).forEach(k=>{
+    const o=document.createElement('option'); o.value=k; o.textContent=k+'반 ('+classes[k].length+'명)'; sel.appendChild(o);
+  });
+}
+
+function sheetCsvCandidates(url){
+  const m=url.match(/\/d\/([a-zA-Z0-9-_]+)/); if(!m) return [];
+  const id=m[1]; const g=url.match(/[#&?]gid=(\d+)/); const gid=g?g[1]:'0';
+  // 여러 방식을 순서대로 시도: export(CORS 안전) → gviz → 게시(pub)
+  return [
+    `https://docs.google.com/spreadsheets/d/${id}/export?format=csv&gid=${gid}`,
+    `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&gid=${gid}`,
+    `https://docs.google.com/spreadsheets/d/${id}/pub?gid=${gid}&single=true&output=csv`
+  ];
+}
+function parseCSV(text){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){ if(ch=='"'){ if(text[i+1]=='"'){cur+='"';i++;} else q=false; } else cur+=ch; }
+    else{ if(ch=='"')q=true; else if(ch==','){row.push(cur);cur='';}
+      else if(ch=='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else if(ch=='\r'){} else cur+=ch; } }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+async function loadSheet(){
+  const url=document.getElementById('sheetUrl').value.trim();
+  const cands=sheetCsvCandidates(url);
+  if(!cands.length){ toast('올바른 구글시트 주소가 아니에요'); return; }
+  toast('시트 불러오는 중…');
+  let lastErr='';
+  for(const csv of cands){
+    try{
+      const res=await fetch(csv);
+      if(!res.ok){ lastErr='HTTP '+res.status; continue; }
+      const text=await res.text();
+      // 로그인 페이지(HTML)가 오면 실패로 간주
+      if(/^\s*<!DOCTYPE|<html/i.test(text)){ lastErr='login'; continue; }
+      const rows=parseCSV(text);
+      if(ingest(rows)){ localStorage.setItem('pb_sheet', url); toast('명단 불러옴'); return; }
+      lastErr='empty';
+    }catch(e){ lastErr=e.message||'network'; }
+  }
+  if(lastErr==='login')
+    toast('시트가 비공개예요 — 공유를 "링크 있는 모든 사용자"로 바꾸거나 "직접 붙여넣기"를 쓰세요');
+  else
+    toast('불러오기 실패 — LTE 연결을 확인하거나 "직접 붙여넣기"를 쓰세요');
+}
+function forget(){ localStorage.removeItem('pb_sheet'); document.getElementById('sheetUrl').value=''; toast('저장된 주소 지움'); }
+
+function usePaste(){ const p=document.getElementById('pasteArea'); p.style.display=p.style.display==='none'?'block':'none'; }
+function applyPaste(){
+  const txt=document.getElementById('rawInput').value;
+  const rows=txt.split(/\r?\n/).map(l=>l.split(/\t|,/));
+  if(ingest(rows)) toast('명단 적용됨');
+}
+
+function curClass(){ return document.getElementById('classSel').value; }
+function keyOf(p){ return p.name+'@'+curClass(); }
+function renderRoster(){
+  const cls=curClass(); const list=classes[cls]||[];
+  const grid=document.getElementById('attGrid'); grid.innerHTML='';
+  ['W','M'].forEach(sx=>{
+    const grp=list.filter(p=>p.sex===sx); if(!grp.length) return;
+    const lbl=document.createElement('div'); lbl.className='grp-label';
+    lbl.textContent=(sx==='W'?'여학생':'남학생')+' '+grp.length+'명'; grid.appendChild(lbl);
+    grp.forEach(p=>{
+      const el=document.createElement('div'); const locked=p.excluded;
+      el.className='chip '+(sx==='W'?'w':'m')+(locked?' locked':'')+(absent.has(keyOf(p))?' absent':'');
+      el.innerHTML=`<span class="d"></span>${esc(p.name)}`;
+      if(!locked) el.onclick=()=>{ const k=keyOf(p); absent.has(k)?absent.delete(k):absent.add(k); renderRoster(); };
+      grid.appendChild(el);
+    });
+  });
+  renderCounts();
+}
+function activeRoster(){
+  const cls=curClass();
+  return (classes[cls]||[]).filter(p=>!p.excluded && !absent.has(keyOf(p)));
+}
+function renderCounts(){
+  const a=activeRoster(); const cls=curClass(); const all=classes[cls]||[];
+  const w=a.filter(p=>p.sex==='W').length, m=a.filter(p=>p.sex==='M').length;
+  const ex=all.filter(p=>p.excluded).length;
+  const ab=all.filter(p=>!p.excluded && absent.has(keyOf(p))).length;
+  let h=`<span class="pill t">평가대상 ${a.length}</span><span class="pill w">여 ${w}</span><span class="pill m">남 ${m}</span>`;
+  if(ab) h+=`<span class="pill x">결석 ${ab}</span>`;
+  if(ex) h+=`<span class="pill x">상시제외 ${ex}</span>`;
+  document.getElementById('counts').innerHTML=h;
+}
+function resetAbsent(){ absent.clear(); renderRoster(); toast('결석 초기화 — 전원 복귀'); }
+
+/* 경기(매치) 목록에 물리적 코트 번호 + 그 코트의 경기차수 부여.
+   startCourt부터 nCourts개 코트에 번갈아 배정. */
+function assignCourtNumbers(matches, startCourt, nCourts){
+  nCourts=Math.max(1, nCourts|0);
+  const seq={}; // 코트별 경기 카운트
+  matches.forEach((m,i)=>{
+    const courtNo = startCourt + (i % nCourts);
+    seq[courtNo]=(seq[courtNo]||0)+1;
+    m.courtNo=courtNo;
+    m.gameNo=seq[courtNo];
+  });
+  return startCourt + nCourts; // 다음 그룹 시작 코트번호
+}
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function buildCourts(group, sexClass){
+  const g=shuffle(group); const courts=[]; const wait=[];
+  const full=Math.floor(g.length/4);
+  for(let i=0;i<full;i++){const f=g.slice(i*4,i*4+4);
+    courts.push({sex:sexClass,A:[f[0],f[1]],B:[f[2],f[3]],twice:false,pick:false});}
+  const rem=g.slice(full*4);
+  if(rem.length===1){ wait.push(rem[0]); }
+  else if(rem.length===2){
+    if(courts.length>0){ const first=courts[0];
+      courts.push({sex:sexClass,A:[rem[0],rem[1]],B:[first.A[0],first.A[1]],twice:true,pick:false}); }
+    else{ courts.push({sex:sexClass,A:[rem[0],rem[1]],B:[null,null],twice:false,pick:true}); }
+  }
+  else if(rem.length===3){ courts.push({sex:sexClass,A:[rem[0],rem[1]],B:[rem[2],null],twice:false,pick:true}); }
+  return {courts,wait};
+}
+let lastCourts=[], lastWait=[], curFilter='all';
+let bySex=false; // 기본: 성별 무시(혼합)
+
+function toggleSexMode(){
+  bySex=!bySex;
+  const b=document.getElementById('sexToggle');
+  b.textContent = bySex ? '성별 구분 (남남·여여)' : '성별 무시 (전체 혼합)';
+  b.classList.toggle('on', bySex);
+  document.getElementById('cfgW').style.display = bySex?'block':'none';
+  document.getElementById('cfgM').style.display = bySex?'block':'none';
+  document.getElementById('cfgX').style.display = bySex?'none':'block';
+  toast(bySex ? '성별 구분 모드 — 남남·여여로 편성' : '성별 무시 모드 — 전체 혼합 편성');
+}
+
+function assign(){
+  const a=activeRoster();
+  if(!a.length){ toast('평가할 학생이 없어요'); return; }
+  if(bySex){
+    const women=a.filter(p=>p.sex==='W'), men=a.filter(p=>p.sex==='M');
+    const wRes=buildCourts(women,'w'), mRes=buildCourts(men,'m');
+    const nW=Math.max(1,parseInt(document.getElementById('courtsW').value)||1);
+    const nM=Math.max(1,parseInt(document.getElementById('courtsM').value)||1);
+    // 여학생 코트는 1번부터, 남학생은 그 다음 번호부터
+    let next=assignCourtNumbers(wRes.courts, 1, nW);
+    if(wRes.courts.length===0) next=1; // 여학생 경기 없으면 남자가 1번부터
+    assignCourtNumbers(mRes.courts, next, nM);
+    lastCourts=[...wRes.courts,...mRes.courts];
+    lastWait=[...wRes.wait,...mRes.wait];
+  }else{
+    const res=buildCourts(a,'x'); // 전체 혼합, 중립색
+    const nX=Math.max(1,parseInt(document.getElementById('courtsX').value)||1);
+    assignCourtNumbers(res.courts, 1, nX);
+    lastCourts=res.courts; lastWait=res.wait;
+  }
+  curFilter='all';
+  syncTabs();
+  openStage();
+  renderStage();
+}
+
+function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function playerHTML(p,opts={}){
+  if(p===null||p===undefined) return `<div class="player pick">＋ 티처픽</div>`;
+  const badge=opts.twice?`<span class="badge">2경기</span>`:'';
+  return `<div class="player ${opts.twice?'twice':''}"><span class="dot"></span><span class="pn">${esc(p.name)}</span>${badge}</div>`;
+}
+function courtHTML(c){
+  const tag = c.sex==='w'?'여학생':(c.sex==='m'?'남학생':'혼합');
+  const note=c.twice?'추가 경기':(c.pick?'평가 지정':'');
+  const cnum = c.courtNo||1;
+  const gnum = c.gameNo||1;
+  return `<div class="court ${c.sex}">
+    <div class="court-head"><div class="cnum">${cnum}</div>
+      <div><div class="ctitle">${cnum}코트 <span class="game">/ ${gnum}경기</span></div>
+      <div class="ctag">${tag}${note?' · '+note:''}</div></div></div>
+    <div class="team"><div class="team-label">A 팀</div>
+      <div class="team-row">${playerHTML(c.A[0],{twice:c.twice})}${playerHTML(c.A[1],{twice:c.twice})}</div></div>
+    <div class="net"><div class="net-band">NET</div></div>
+    <div class="team"><div class="team-label">B 팀</div>
+      <div class="team-row">${playerHTML(c.B[0])}${playerHTML(c.B[1])}</div></div></div>`;
+}
+
+/* 전체화면 stage 렌더 + 코트 수에 맞춰 자동 그리드 */
+function renderStage(){
+  const shown = curFilter==='all' ? lastCourts : lastCourts.filter(c=>c.sex===curFilter);
+
+  const box=document.getElementById('stageCourts');
+  const count=shown.length || 1;
+  // 화면 비율에 맞춰 열 수 자동 결정
+  const vw=window.innerWidth, vh=window.innerHeight;
+  let cols=Math.ceil(Math.sqrt(count*(vw/Math.max(vh,1))*0.62));
+  cols=Math.max(1,Math.min(cols,count, vw<520?2:5));
+  const rows=Math.ceil(count/cols);
+  box.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+  box.style.gridTemplateRows=`repeat(${rows},1fr)`;
+  box.innerHTML=shown.map(c=>courtHTML(c)).join('') || '<div style="color:#cfe6e3;align-self:center;text-align:center;font-weight:700;">해당 코트 없음</div>';
+
+  // 대기
+  const wbox=document.getElementById('stageWait');
+  const w = curFilter==='all'?lastWait:lastWait.filter(p=>(p.sex==='W'?'w':'m')===curFilter);
+  wbox.innerHTML = w.length
+    ? `<div class="wbar"><strong style="color:#16545f;">대기</strong>${w.map(p=>`<span class="pill ${p.sex==='W'?'w':'m'}">${esc(p.name)}</span>`).join('')}</div>` : '';
+
+  // 탭 자동 숨김: 한 성별만 있으면 탭 감춤
+  const hasW=lastCourts.some(c=>c.sex==='w'), hasM=lastCourts.some(c=>c.sex==='m');
+  document.getElementById('stageTabs').style.display=(hasW&&hasM)?'flex':'none';
+  document.getElementById('stageTitle').textContent=(curClass()||'')+'반 · 편성 결과';
+}
+function setFilter(f){ curFilter=f; syncTabs(); renderStage(); }
+function syncTabs(){
+  document.querySelectorAll('#stageTabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.f===curFilter));
+}
+function openStage(){ document.getElementById('stage').classList.add('on'); }
+function closeStage(){ document.getElementById('stage').classList.remove('on'); }
+window.addEventListener('resize',()=>{ if(document.getElementById('stage').classList.contains('on')) renderStage(); });
+window.addEventListener('orientationchange',()=>setTimeout(()=>{ if(document.getElementById('stage').classList.contains('on')) renderStage(); },200));
+
+function toggleSetup(){document.getElementById('setupPanel').classList.toggle('collapsed');}
+function collapseSetup(v){document.getElementById('setupPanel').classList.toggle('collapsed',v);}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2600);}
+
+(function init(){
+  const saved=localStorage.getItem('pb_sheet');
+  if(saved){ document.getElementById('sheetUrl').value=saved; loadSheet(); }
+})();
+</script>
+</body>
+</html>
