@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+<title>복식 대진표</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=Nanum+Myeongjo:wght@800&display=swap">
+<style>
+/* layout: 위는 입력(명단·방식·코트), 아래는 라운드별 코트 배정표. 결과는 교실 화면에서 멀리서도 읽히게 크게 */
+:root{
+  --paper:#F3F6F4; --sheet:#FFFFFF; --ink:#16211B; --sub:#5A675F; --line:#D2DBD5; --line-strong:#8C9A91;
+  --court:#1F6B4A; --court-soft:#E2F0E8; --m:#1D5FA8; --m-soft:#E4EEF8; --w:#B23A5A; --w-soft:#F8E6EC;
+  --warn:#9A5B00; --warn-soft:#FBEFD9;
+  --f-title:"Nanum Myeongjo","Batang",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0E1411; --sheet:#151D19; --ink:#E5ECE7; --sub:#97A69D; --line:#27332C; --line-strong:#4A5A50;
+  --court:#5CC495; --court-soft:#163226; --m:#7DB4F0; --m-soft:#152A42; --w:#F08AA6; --w-soft:#3A1824;
+  --warn:#F2B860; --warn-soft:#3A2A10; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0E1411; --sheet:#151D19; --ink:#E5ECE7; --sub:#97A69D; --line:#27332C; --line-strong:#4A5A50;
+  --court:#5CC495; --court-soft:#163226; --m:#7DB4F0; --m-soft:#152A42; --w:#F08AA6; --w-soft:#3A1824;
+  --warn:#F2B860; --warn-soft:#3A2A10; color-scheme:dark}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-block:clamp(16px,3vw,36px);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header h1{margin:0;font-family:var(--f-title);font-weight:800;font-size:clamp(26px,3.6vw,40px);letter-spacing:.04em}
+header p{margin:4px 0 0;color:var(--sub);font-size:15px}
+header p b{color:var(--court);font-weight:600}
+.setup{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:14px;background:var(--sheet);border:1px solid var(--line);padding:16px}
+@media (max-width:720px){.setup{grid-template-columns:1fr}}
+label.cap{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-bottom:6px;letter-spacing:.02em}
+textarea{width:100%;min-height:190px;resize:vertical;font:inherit;font-size:15px;line-height:1.6;color:var(--ink);background:var(--paper);border:1px solid var(--line);padding:10px 12px}
+textarea:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--court);outline-offset:1px}
+.hint{font-size:12px;color:var(--sub);margin-top:6px}
+.opts{display:flex;flex-direction:column;gap:14px}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line-strong);width:fit-content;max-width:100%}
+.seg button{font:inherit;font-size:15px;padding:8px 14px;border:0;background:transparent;color:var(--sub);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--court);color:#fff}
+.nums{display:flex;gap:16px;flex-wrap:wrap}
+.nums input{width:84px;font:inherit;font-size:18px;padding:6px 8px;color:var(--ink);background:var(--paper);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.act{display:flex;gap:8px;flex-wrap:wrap}
+.act button{font:inherit;font-size:16px;font-weight:600;padding:10px 18px;cursor:pointer;border:1px solid var(--court)}
+.go{background:var(--court);color:#fff}
+.re{background:transparent;color:var(--court)}
+.stats{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:14px;padding:4px 10px;border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.chip.m{color:var(--m);background:var(--m-soft);border-color:transparent}
+.chip.w{color:var(--w);background:var(--w-soft);border-color:transparent}
+.chip.ok{color:var(--court);background:var(--court-soft);border-color:transparent;font-weight:600}
+.chip.bad{color:var(--warn);background:var(--warn-soft);border-color:transparent;font-weight:600}
+.note{font-size:14px;color:var(--warn);background:var(--warn-soft);padding:8px 12px}
+.note:empty{display:none}
+.rounds{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:12px}
+.round{background:var(--sheet);border:1px solid var(--line)}
+.round h2{margin:0;display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px;border-bottom:2px solid var(--court);font-size:20px;font-weight:600}
+.round h2 span{font-size:13px;font-weight:400;color:var(--sub)}
+.match{display:grid;grid-template-columns:64px minmax(0,1fr) 32px minmax(0,1fr);align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line)}
+.match:first-of-type{border-top:0}
+.ct{font-size:14px;font-weight:600;color:var(--court);font-variant-numeric:tabular-nums}
+.ct.later{color:var(--sub);font-weight:400}
+.vs{text-align:center;font-size:13px;color:var(--sub)}
+.team{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:clamp(17px,1.7vw,21px);font-weight:500;min-width:0}
+.p{white-space:nowrap}
+.p.m{color:var(--m)} .p.w{color:var(--w)}
+.rest{padding:9px 14px;border-top:1px dashed var(--line);font-size:14px;color:var(--sub)}
+.empty{background:var(--sheet);border:1px dashed var(--line-strong);padding:28px;text-align:center;color:var(--sub)}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--sub)}
+.legend .m{color:var(--m)} .legend .w{color:var(--w)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>복식 대진표</h1>
+    <p>원칙 · <b>같은 친구와는 한 번만 짝</b>, 상대로는 여러 번 만나도 된다</p>
+  </header>
+
+  <section class="setup" aria-label="대진표 설정">
+    <div>
+      <label class="cap" for="roster">명단 <span style="font-weight:400">(지금 들어 있는 건 예시 명단)</span></label>
+      <textarea id="roster" spellcheck="false"></textarea>
+      <div class="hint">한 줄에 한 명씩 '이름 남/여'. 또는 '남: 이름, 이름' '여: 이름, 이름'처럼 붙여 넣어도 됩니다.</div>
+    </div>
+    <div class="opts">
+      <div>
+        <label class="cap">방식</label>
+        <div class="seg" id="mode" role="group" aria-label="방식">
+          <button type="button" data-v="mixed" aria-pressed="true">혼성 복식</button>
+          <button type="button" data-v="same" aria-pressed="false">남남 · 여여</button>
+          <button type="button" data-v="any" aria-pressed="false">성별 무관</button>
+        </div>
+      </div>
+      <div class="nums">
+        <div><label class="cap" for="courts">코트 수</label><input id="courts" type="number" min="1" max="20" step="1" value="3"></div>
+        <div><label class="cap" for="nround">라운드</label><input id="nround" type="number" min="1" max="30" step="1" value="5"></div>
+      </div>
+      <div class="act">
+        <button type="button" class="go" id="go">대진표 만들기</button>
+        <button type="button" class="re" id="re">다시 섞기</button>
+      </div>
+      <div class="stats" id="stats"></div>
+    </div>
+  </section>
+
+  <div class="note" id="note"></div>
+  <div class="legend" id="legend"><span class="m">■ 남학생</span><span class="w">■ 여학생</span></div>
+  <section class="rounds" id="rounds" aria-live="polite"></section>
+</div>
+
+<script>
+const SAMPLE = `김하준 남
+이도윤 남
+박서준 남
+최시우 남
+정은우 남
+강지호 남
+윤건우 남
+임우진 남
+한서윤 여
+오지아 여
+서하은 여
+신수아 여
+권지유 여
+황채원 여
+송예린 여`;
+
+const $ = s => document.querySelector(s);
+let mode = "mixed", seed = Date.now() % 100000;
+
+function load(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : v; }catch(e){ return d; } }
+function save(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+
+function parse(text){
+  const out = []; let cur = null;
+  text.split(/\n/).forEach(line => {
+    line = line.trim(); if (!line) return;
+    const head = line.match(/^(남|여)(?:학생|자)?\s*[:：]\s*(.*)$/);
+    if (head){ cur = head[1]; line = head[2]; if (!line) return; }
+    line.split(/[,，·\t]+/).forEach(part => {
+      part = part.trim(); if (!part) return;
+      let name = part, g = null, m;
+      if ((m = part.match(/^(.+?)[\s(\/-]*(남|여|M|F|m|f)\)?$/)) && m[1].trim()) { name = m[1].trim(); g = /남|M|m/.test(m[2]) ? "남" : "여"; }
+      else if ((m = part.match(/^(남|여)\s+(.+)$/))) { g = m[1]; name = m[2].trim(); }
+      else if (cur) {
+        part.split(/\s+/).forEach(n => n && out.push({name:n, g:cur}));
+        return;
+      }
+      out.push({name, g});
+    });
+  });
+  return out;
+}
+
+function rng(s){ return function(){ s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function shuffle(a, r){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+// 원형 로테이션: 한 명 고정, 나머지 한 칸씩 → n명이면 n-1라운드 동안 모든 사람과 한 번씩 짝
+function circle(ids, r){
+  const a = ids.slice(); if (a.length % 2) a.push(null);
+  const n = a.length; if (n < 2) return { pairs:[], rest:a.filter(x => x !== null) };
+  const rest = a.slice(1), k = r % (n - 1);
+  const rot = rest.slice(rest.length - k).concat(rest.slice(0, rest.length - k));
+  const c = [a[0], ...rot], pairs = [], wait = [];
+  for (let i = 0; i < n / 2; i++){
+    const x = c[i], y = c[n - 1 - i];
+    if (x === null || y === null) wait.push(x === null ? y : x); else pairs.push([x, y]);
+  }
+  return { pairs, rest:wait };
+}
+// 혼성: 적은 쪽 i번이 많은 쪽 (i+r)번과 짝 → 많은 쪽 인원 수만큼 라운드 동안 겹치지 않음
+function mixed(men, women, r){
+  const swap = men.length > women.length;
+  const S = swap ? women : men, L = swap ? men : women, used = new Set(), pairs = [];
+  S.forEach((s, i) => { const l = L[(i + r) % L.length]; used.add(l); pairs.push(swap ? [l, s] : [s, l]); });
+  return { pairs, rest:L.filter(x => !used.has(x)) };
+}
+function toMatches(teams, r){
+  const t = shuffle(teams, rng(seed * 31 + r * 7919 + 1)), ms = [], rest = [];
+  for (let i = 0; i + 1 < t.length; i += 2) ms.push([t[i], t[i + 1]]);
+  if (t.length % 2) rest.push(...t[t.length - 1]);
+  return { ms, rest };
+}
+
+function build(){
+  const text = $("#roster").value; save("dd-roster", text);
+  const ppl = parse(text);
+  const R = Math.max(1, Math.min(30, parseInt($("#nround").value, 10) || 1));
+  const C = Math.max(1, Math.min(20, parseInt($("#courts").value, 10) || 1));
+  const r0 = rng(seed);
+  const all = shuffle(ppl.map((p, i) => i), r0);
+  const men = all.filter(i => ppl[i].g === "남"), women = all.filter(i => ppl[i].g === "여"), none = all.filter(i => !ppl[i].g);
+  const notes = [];
+  let maxR;
+  if (mode === "mixed"){ maxR = Math.max(men.length, women.length); if (none.length) notes.push(`성별이 없는 ${none.length}명은 혼성 대진에서 빠졌어요. 이름 뒤에 남/여를 붙여 주세요.`); }
+  else if (mode === "same"){ const f = n => n < 2 ? 0 : (n % 2 ? n : n - 1); maxR = Math.min(...[men.length, women.length].filter(n => n >= 2).map(f).concat([Infinity])); if (none.length) notes.push(`성별이 없는 ${none.length}명은 남남·여여 대진에서 빠졌어요.`); }
+  else { maxR = all.length % 2 ? all.length : all.length - 1; }
+  if (maxR !== Infinity && R > maxR) notes.push(`이 인원으로 짝이 겹치지 않는 건 ${maxR}라운드까지예요. ${maxR + 1}라운드부터는 짝이 다시 나올 수 있어요.`);
+
+  const rounds = [], seen = new Map(); let dup = 0;
+  for (let r = 0; r < R; r++){
+    let teams = [], wait = [];
+    if (mode === "mixed"){ const x = mixed(men, women, r); teams = x.pairs; wait = x.rest; }
+    else if (mode === "same"){
+      const a = circle(men, r), b = circle(women, r);
+      const ma = toMatches(a.pairs, r), mb = toMatches(b.pairs, r + 101);
+      rounds.push({ ms:[...mb.ms, ...ma.ms], rest:[...a.rest, ...b.rest, ...ma.rest, ...mb.rest] });
+      a.pairs.concat(b.pairs).forEach(countPair);
+      continue;
+    } else { const x = circle(all, r); teams = x.pairs; wait = x.rest; }
+    teams.forEach(countPair);
+    const m = toMatches(teams, r);
+    rounds.push({ ms:m.ms, rest:[...wait, ...m.rest] });
+  }
+  function countPair(p){ const k = Math.min(...p) + "-" + Math.max(...p); const c = (seen.get(k) || 0) + 1; seen.set(k, c); if (c > 1) dup++; }
+
+  const st = $("#stats"); st.textContent = "";
+  const chip = (cls, txt) => { const s = document.createElement("span"); s.className = "chip " + cls; s.textContent = txt; st.appendChild(s); };
+  chip("m", `남 ${men.length}명`); chip("w", `여 ${women.length}명`);
+  if (none.length) chip("", `성별 없음 ${none.length}명`);
+  chip(dup ? "bad" : "ok", dup ? `짝 중복 ${dup}번` : "짝 중복 0");
+  $("#note").textContent = notes.join(" ");
+
+  const box = $("#rounds"); box.textContent = "";
+  if (!ppl.length){ const e = document.createElement("div"); e.className = "empty"; e.textContent = "명단을 붙여 넣고 '대진표 만들기'를 누르세요."; box.appendChild(e); return; }
+  const P = i => { const s = document.createElement("span"); s.className = "p " + (ppl[i].g === "남" ? "m" : ppl[i].g === "여" ? "w" : ""); s.textContent = ppl[i].name; return s; };
+  rounds.forEach((rd, ri) => {
+    const sec = document.createElement("article"); sec.className = "round";
+    const h = document.createElement("h2"); h.textContent = `${ri + 1}라운드`;
+    const hs = document.createElement("span"); hs.textContent = `${rd.ms.length}경기`; h.appendChild(hs); sec.appendChild(h);
+    rd.ms.forEach((mt, mi) => {
+      const row = document.createElement("div"); row.className = "match";
+      const ct = document.createElement("span"); ct.className = "ct" + (mi >= C ? " later" : "");
+      ct.textContent = mi < C ? `${mi + 1}코트` : `${Math.floor(mi / C) + 1}순서`;
+      const ta = document.createElement("div"); ta.className = "team"; mt[0].forEach(i => ta.appendChild(P(i)));
+      const vs = document.createElement("span"); vs.className = "vs"; vs.textContent = "vs";
+      const tb = document.createElement("div"); tb.className = "team"; mt[1].forEach(i => tb.appendChild(P(i)));
+      row.append(ct, ta, vs, tb); sec.appendChild(row);
+    });
+    if (rd.rest.length){ const w = document.createElement("div"); w.className = "rest"; w.textContent = "대기 · " + rd.rest.map(i => ppl[i].name).join(", "); sec.appendChild(w); }
+    box.appendChild(sec);
+  });
+}
+
+$("#roster").value = load("dd-roster", SAMPLE);
+document.querySelectorAll("#mode button").forEach(b => b.addEventListener("click", () => {
+  mode = b.dataset.v;
+  document.querySelectorAll("#mode button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  build();
+}));
+$("#go").addEventListener("click", build);
+$("#re").addEventListener("click", () => { seed = (seed * 9301 + 49297) % 233280; build(); });
+$("#courts").addEventListener("change", build);
+$("#nround").addEventListener("change", build);
+build();
+</script>
+</body>
+</html>
